@@ -3,13 +3,14 @@
   "incident_id": "INC-2026-UNVERIFIED-MAINT-03",
   "status": "FINALIZED_POSTMORTEM",
   "root_cause": "Unannounced emergency node reboot labeled as maintenance without advance notice timestamps.",
-  "incident_start_ts": 1700003000,
-  "incident_end_ts": 1700006600,
-  "observed_ttr_minutes": 60,
+  "incident_start_ts": 1792254768,
+  "incident_end_ts": 1792254828,
+  "observed_ttr_minutes": 1,
   "observed_p99_ms": 1500,
   "maintenance_claimed": true,
   "maintenance_announced_ts": 0,
   "maintenance_window_start_ts": 0,
   "maintenance_window_end_ts": 0,
-  "telemetry": "Outage recovery duration was 60 minutes (1700003000 to 1700006600); peak p99 latency reached 1500 ms during reboot."
+  "ttr_summary": "Outage recovery duration was 1 minute during emergency node reboot",
+  "p99_summary": "Peak p99 latency reached 1500 ms during reboot"
 }

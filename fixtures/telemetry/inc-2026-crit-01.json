@@ -2,14 +2,15 @@
   "service": "aegis-core-api",
   "incident_id": "INC-2026-CRIT-01",
   "status": "FINALIZED_POSTMORTEM",
-  "root_cause": "BGP route leak in us-east-1 primary ingress cluster caused sustained packet drop.",
-  "incident_start_ts": 1700001000,
-  "incident_end_ts": 1700004600,
-  "observed_ttr_minutes": 60,
+  "root_cause": "BGP route leak in primary ingress cluster caused severe packet drop.",
+  "incident_start_ts": 1792254632,
+  "incident_end_ts": 1792254692,
+  "observed_ttr_minutes": 1,
   "observed_p99_ms": 1450,
   "maintenance_claimed": false,
   "maintenance_announced_ts": 0,
   "maintenance_window_start_ts": 0,
   "maintenance_window_end_ts": 0,
-  "telemetry": "Total recovery duration was 60 minutes (1700001000 to 1700004600); peak p99 latency reached 1450 ms during outage."
+  "ttr_summary": "Total recovery duration was 1 minute from outage start to restoration",
+  "p99_summary": "Peak p99 latency reached 1450 ms during the incident window"
 }
