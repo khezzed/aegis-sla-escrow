@@ -104,3 +104,13 @@ gltest tests/integration/ -v -s
 - **Live Integration Suite (`tests/integration/` — 4 tests; skipped when local GenLayer RPC is unavailable)**:
   Targets a live GenLayer Studio or `glsim` RPC endpoint (`http://127.0.0.1:4000/api`) to execute multi-validator Optimistic Democracy consensus and L2 EVM value settlement on GenLayer Chain. When the local GenLayer RPC (`http://127.0.0.1:4000/api`) is not running in the test environment, `gltest` skips these 4 tests cleanly with an explicit diagnostic reason rather than reporting false passes.
 
+---
+
+## Live Deployment (GenLayer Studio / `studionet`)
+
+- **Contract Address**: `0x9094C38E7aa90d7eFCc6D1A67D47100e1163C793`
+- **GenLayer Studio Explorer**: [https://explorer-studio.genlayer.com/address/0x9094C38E7aa90d7eFCc6D1A67D47100e1163C793](https://explorer-studio.genlayer.com/address/0x9094C38E7aa90d7eFCc6D1A67D47100e1163C793)
+- **Deployment Transaction Hash**: `0x030ba80f3b91f416606e9b59179800f0790ef90acc32e1f235245d4cef0e3eb6` (`status: ACCEPTED`)
+- **Charter SHA-256 Digest (`charter_hash`)**: `18adb130c378c3ad7376c7329c0de962381623406579b90fdf231cd37e813674`
+
+
