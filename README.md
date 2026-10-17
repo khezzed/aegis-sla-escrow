@@ -55,15 +55,17 @@ aegis-sla-escrow/
 
 Create an isolated virtual environment and install dependencies exclusively from `requirements.txt`:
 
+**Linux / macOS (`bash`)**:
 ```bash
 python -m venv .venv
-
-# Linux / macOS:
 source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-# Windows (PowerShell):
+**Windows (`powershell`)**:
+```powershell
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-
 pip install -r requirements.txt
 ```
 
