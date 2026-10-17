@@ -751,9 +751,10 @@ def test_at17_incident_identity_mismatch_returns_inconclusive_and_retains_stake(
 
 def test_at18_validator_accepts_harmless_citation_wording_differences():
     """
-    AT-18: Verifies that when the Leader and Validator extract different verbatim
-    citations (and minor within-tolerance metric differences) that are both grounded
-    in the validator's fetched payload and yield the identical verdict, consensus succeeds.
+    AT-18: Verifies that when the Leader and Validator LLMs extract different verbatim
+    citation spans (shorter vs. longer) around the same metric from the same payload,
+    Gate 5 deterministically canonicalizes both citations to the identical grounded clause,
+    and validator_fn's strict 15-field equality check succeeds.
     """
     contract, sub_id = setup_funded_subscription()
     url = "https://status.cloudprovider.io/incidents/inc-18-cit-diff"
@@ -772,7 +773,7 @@ def test_at18_validator_accepts_harmless_citation_wording_differences():
     )
     mock_web_responses[url] = MockWebResponse(status=200, body=payload.encode("utf-8"))
 
-    # Leader extracts shorter verbatim substrings; Validator extracts longer verbatim substrings
+    # Leader LLM extracts shorter verbatim substrings; Validator LLM extracts longer verbatim substrings
     mock_llm_responses.append(
         lambda _p: {
             "service_name_matched": True,
@@ -802,7 +803,7 @@ def test_at18_validator_accepts_harmless_citation_wording_differences():
             "incident_start_ts": inc_start,
             "incident_end_ts": inc_end,
             "observed_ttr_minutes": 150,
-            "observed_p99_ms": 1852,
+            "observed_p99_ms": 1850,
             "maintenance_claimed": False,
             "maintenance_announced_ts": 0,
             "maintenance_window_start_ts": 0,
@@ -816,8 +817,120 @@ def test_at18_validator_accepts_harmless_citation_wording_differences():
     env = contract.adjudicate_incident(rep_id)
     assert env["outcome"] == OUTCOME_CRITICAL_BREACH
     assert env["status_code"] == STATUS_OK_VERIFIED
-    assert env["ttr_citation"] == "outage duration was 150 minutes"
-    assert env["p99_citation"] == "p99 latency reached 1850 ms"
+    assert env["ttr_citation"] == "Total outage duration was 150 minutes from start to recovery"
+    assert env["p99_citation"] == "Peak p99 latency reached 1850 ms during the incident window"
     assert_global_conservation(contract)
 
 
+def test_at19_adversarial_leader_same_outcome_forged_field_rejected_by_validator():
+    """
+    AT-19 (Portal Rubric Section 3 & Section 8 Step 2):
+    Tests an adversarial leader that returns the SAME headline outcome (CRITICAL_BREACH)
+    and SAME violated_slo_ids, but forges a secondary stored field (e.g., observed_p99_ms
+    shifted by +2 ms, or a non-canonical citation). Because validator_fn enforces 100%
+    exact equality across all 15 stored fields, the forged envelope is rejected.
+    """
+    contract, sub_id = setup_funded_subscription()
+    url = "https://status.cloudprovider.io/incidents/inc-19-forged-field"
+
+    gl_mock.message.sender_address = TENANT_A_ADDR
+    gl_mock.message.value = DISPUTE_STAKE_WEI
+    rep_id = contract.submit_incident_report(sub_id, "INC-FORGE-19", url)
+    gl_mock.message.value = u256(0)
+
+    inc_start = 1792232000
+    inc_end = inc_start + (150 * 60)
+    payload = (
+        '{"service":"cloud-core-api","incident_id":"INC-FORGE-19",'
+        '"ttr":"Total outage duration was 150 minutes from start to recovery",'
+        '"p99":"Peak p99 latency reached 1850 ms during the incident window"}'
+    )
+    mock_web_responses[url] = MockWebResponse(status=200, body=payload.encode("utf-8"))
+
+    # Leader returns CRITICAL_BREACH but forges observed_p99_ms = 1852 (while citation has 1850);
+    # Validator independently extracts observed_p99_ms = 1850.
+    mock_llm_responses.append(
+        lambda _p: {
+            "service_name_matched": True,
+            "incident_id_matched": True,
+            "postmortem_finalized": True,
+            "timestamps_present": True,
+            "root_cause_documented": True,
+            "incident_start_ts": inc_start,
+            "incident_end_ts": inc_end,
+            "observed_ttr_minutes": 150,
+            "observed_p99_ms": 1852,
+            "maintenance_claimed": False,
+            "maintenance_announced_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "maintenance_window_end_ts": 0,
+            "ttr_citation": "Total outage duration was 150 minutes from start to recovery",
+            "p99_citation": "Peak p99 latency reached 1850 ms during the incident window",
+        }
+    )
+    mock_llm_responses.append(
+        lambda _p: {
+            "service_name_matched": True,
+            "incident_id_matched": True,
+            "postmortem_finalized": True,
+            "timestamps_present": True,
+            "root_cause_documented": True,
+            "incident_start_ts": inc_start,
+            "incident_end_ts": inc_end,
+            "observed_ttr_minutes": 150,
+            "observed_p99_ms": 1850,
+            "maintenance_claimed": False,
+            "maintenance_announced_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "maintenance_window_end_ts": 0,
+            "ttr_citation": "Total outage duration was 150 minutes from start to recovery",
+            "p99_citation": "Peak p99 latency reached 1850 ms during the incident window",
+        }
+    )
+
+    gl_mock.message_raw = {"datetime": inc_end + 300}
+    with pytest.raises(UserError, match="CONSENSUS_VALIDATION_FAILED"):
+        contract.adjudicate_incident(rep_id)
+
+    assert_global_conservation(contract)
+
+
+def test_at20_invalid_utf8_and_empty_payload_fail_closed_to_inconclusive():
+    """
+    AT-20 (Portal Rubric Section 3 & Section 8 Step 2):
+    Verifies that HTTP 200 responses with invalid UTF-8 bytes or an empty body fail closed
+    to OUTCOME_INCONCLUSIVE (STATUS_EXPECTED_INCOMPLETE_TELEMETRY), keeping the stake held
+    and collateral locked without corrupting state.
+    """
+    contract, sub_id = setup_funded_subscription()
+    url_bad_utf8 = "https://status.cloudprovider.io/incidents/inc-20-bad-utf8"
+    url_empty = "https://status.cloudprovider.io/incidents/inc-20-empty"
+
+    gl_mock.message.sender_address = TENANT_A_ADDR
+    gl_mock.message.value = DISPUTE_STAKE_WEI
+    rep_id = contract.submit_incident_report(sub_id, "INC-UTF8-20", url_bad_utf8)
+    gl_mock.message.value = u256(0)
+
+    # Attempt 1: HTTP 200 with invalid UTF-8 byte sequence
+    mock_web_responses[url_bad_utf8] = MockWebResponse(
+        status=200,
+        body=b"\xff\xfe\xfd\x80invalid-utf8-telemetry",
+    )
+    env_1 = contract.adjudicate_incident(rep_id)
+    assert env_1["outcome"] == OUTCOME_INCONCLUSIVE
+    assert env_1["status_code"] == STATUS_EXPECTED_INCOMPLETE_TELEMETRY
+    assert env_1["telemetry_complete"] is False
+    assert contract.get_incident_report(rep_id)["status"] == int(REPORT_INCONCLUSIVE)
+    assert contract.get_incident_report(rep_id)["stake_state"] == int(STAKE_HELD)
+    assert_global_conservation(contract)
+
+    # Retry 1: HTTP 200 with empty payload body
+    contract.reevaluate_incident_report(rep_id, url_empty)
+    mock_web_responses[url_empty] = MockWebResponse(status=200, body=b"")
+    env_2 = contract.adjudicate_incident(rep_id)
+    assert env_2["outcome"] == OUTCOME_INCONCLUSIVE
+    assert env_2["status_code"] == STATUS_EXPECTED_INCOMPLETE_TELEMETRY
+    assert env_2["telemetry_complete"] is False
+    assert contract.get_incident_report(rep_id)["status"] == int(REPORT_INCONCLUSIVE)
+    assert contract.get_incident_report(rep_id)["stake_state"] == int(STAKE_HELD)
+    assert_global_conservation(contract)

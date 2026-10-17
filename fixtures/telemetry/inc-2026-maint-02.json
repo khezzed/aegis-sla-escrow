@@ -1,0 +1,15 @@
+{
+  "service": "aegis-core-api",
+  "incident_id": "INC-2026-MAINT-02",
+  "status": "FINALIZED_POSTMORTEM",
+  "root_cause": "Scheduled database storage engine upgrade completed inside pre-announced maintenance window.",
+  "incident_start_ts": 1700002000,
+  "incident_end_ts": 1700004700,
+  "observed_ttr_minutes": 45,
+  "observed_p99_ms": 600,
+  "maintenance_claimed": true,
+  "maintenance_announced_ts": 1699900000,
+  "maintenance_window_start_ts": 1700001800,
+  "maintenance_window_end_ts": 1700005400,
+  "telemetry": "Scheduled maintenance recovery took 45 minutes (1700002000 to 1700004700); peak p99 latency was 600 ms inside window."
+}
