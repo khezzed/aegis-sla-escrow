@@ -1,0 +1,947 @@
+{
+  "project": "AEGIS \u2014 Autonomous Evidence-Grounded Incident & SLA Escrow",
+  "generated_at_utc": "2026-10-17T16:42:15.936133+00:00",
+  "network": {
+    "name": "studionet",
+    "rpc_endpoint": "https://studio.genlayer.com/api",
+    "explorer_base_url": "https://explorer-studio.genlayer.com"
+  },
+  "source_verification": {
+    "repository_url": "https://github.com/khezzed/aegis-sla-escrow",
+    "contract_path": "contracts/aegis_sla_escrow.py",
+    "deployed_commit_sha": "f87ce6486e0262b81821dc4a6f34a9aca784c52b",
+    "pinned_contract_url": "https://github.com/khezzed/aegis-sla-escrow/blob/f87ce6486e0262b81821dc4a6f34a9aca784c52b/contracts/aegis_sla_escrow.py",
+    "git_blob_sha1": "530d77e45959a9d94f9bd7672eaa59b0b8b077e8",
+    "byte_length": 67253,
+    "line_endings": "LF",
+    "runner_header": "# { \"Depends\": \"py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6\" }"
+  },
+  "toolchain": {
+    "python_version": "3.14.6",
+    "genlayer_test": "0.29.2",
+    "genlayer_py": "0.22.1",
+    "genvm_linter": "0.3.2"
+  },
+  "evidence_fixtures": [
+    {
+      "incident_id": "INC-2026-CRIT-01",
+      "url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-crit-01.json",
+      "http_status": 200,
+      "raw_bytes": 624,
+      "max_payload_bytes_cap": 16384
+    },
+    {
+      "incident_id": "INC-2026-MAINT-02",
+      "url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-maint-02.json",
+      "http_status": 200,
+      "raw_bytes": 667,
+      "max_payload_bytes_cap": 16384
+    },
+    {
+      "incident_id": "INC-2026-UNVERIFIED-MAINT-03",
+      "url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-unverified-maint-03.json",
+      "http_status": 200,
+      "raw_bytes": 642,
+      "max_payload_bytes_cap": 16384
+    }
+  ],
+  "deployment": {
+    "contract_address": "0x72Fc1e32b4E6A3434B8712d188C6b5B0Ae1FEEE7",
+    "explorer_contract_url": "https://explorer-studio.genlayer.com/address/0x72Fc1e32b4E6A3434B8712d188C6b5B0Ae1FEEE7",
+    "provider_address": "0x5b98F94F3e2ac7Ec49a27f800DdE546f3B4Fdd61",
+    "tenant_address": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+    "unauthorized_stranger_address": "0x15c5E68c02b891ab433c4e4C37bE0D90240c9865",
+    "constructor_args": {
+      "charter": {
+        "schema_version": "1.0",
+        "service_name": "aegis-core-api",
+        "allowed_telemetry_domains": [
+          "raw.githubusercontent.com",
+          "status.aegis-cloud.io"
+        ],
+        "allow_subdomains": true,
+        "coverage_window_seconds": 86400,
+        "claim_reporting_grace_seconds": 3600,
+        "max_reevaluation_window_seconds": 7200,
+        "max_retries": 2,
+        "max_payload_bytes": 16384,
+        "slos": {
+          "SLO_RECOVERY_TIME": {
+            "metric": "RECOVERY_TIME_MINUTES",
+            "degraded_at_or_above_minutes": 15,
+            "critical_at_or_above_minutes": 45
+          },
+          "SLO_LATENCY_P99": {
+            "metric": "LATENCY_P99_MS",
+            "degraded_at_or_above_ms": 400,
+            "critical_at_or_above_ms": 1200
+          }
+        },
+        "carveouts": {
+          "CARVEOUT_SCHEDULED_MAINTENANCE": {
+            "min_advance_notice_seconds": 86400,
+            "max_maintenance_window_minutes": 120,
+            "excused_slo_ids": [
+              "SLO_RECOVERY_TIME",
+              "SLO_LATENCY_P99"
+            ]
+          }
+        },
+        "evidence_requirements": {
+          "require_finalized_postmortem": true,
+          "require_incident_timestamps": true,
+          "require_root_cause_statement": true
+        }
+      },
+      "unit_subscription_fee_wei": 10,
+      "unit_critical_remedy_wei": 100,
+      "unit_degraded_remedy_wei": 40,
+      "dispute_stake_wei": 5,
+      "max_units_per_subscription": 10
+    }
+  },
+  "transactions": [
+    {
+      "label": "deploy_contract",
+      "tx_hash": "0x780350ac8e3bf30d0f8361c1e8dfcbe898e7653d2c7fc54bcdf349e493815ef6",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x780350ac8e3bf30d0f8361c1e8dfcbe898e7653d2c7fc54bcdf349e493815ef6",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0B50B270Eba5D9B780272C4Cf4720260177e761D": "agree",
+        "0x5Bbbd7cdD63c0ba7f088038Cb049bDDAbE4F6fd1": "idle",
+        "0x892C437da9b9CA0b6017B6f046F58E3526B46ec6": "agree",
+        "0xb0925568bFbCF00aADBcA053E6D0E1628ff3d530": "agree",
+        "0xf29b6947ed298d139FC2655DB15D868C9AbB3091": "idle"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_charter_info": {
+          "charter": {
+            "allow_subdomains": true,
+            "allowed_telemetry_domains": [
+              "raw.githubusercontent.com",
+              "status.aegis-cloud.io"
+            ],
+            "carveouts": {
+              "CARVEOUT_SCHEDULED_MAINTENANCE": {
+                "excused_slo_ids": [
+                  "SLO_LATENCY_P99",
+                  "SLO_RECOVERY_TIME"
+                ],
+                "max_maintenance_window_minutes": 120,
+                "min_advance_notice_seconds": 86400
+              }
+            },
+            "claim_reporting_grace_seconds": 3600,
+            "coverage_window_seconds": 86400,
+            "evidence_requirements": {
+              "require_finalized_postmortem": true,
+              "require_incident_timestamps": true,
+              "require_root_cause_statement": true
+            },
+            "max_payload_bytes": 16384,
+            "max_reevaluation_window_seconds": 7200,
+            "max_retries": 2,
+            "schema_version": "1.0",
+            "service_name": "aegis-core-api",
+            "slos": {
+              "SLO_LATENCY_P99": {
+                "critical_at_or_above_ms": 1200,
+                "degraded_at_or_above_ms": 400,
+                "metric": "LATENCY_P99_MS"
+              },
+              "SLO_RECOVERY_TIME": {
+                "critical_at_or_above_minutes": 45,
+                "degraded_at_or_above_minutes": 15,
+                "metric": "RECOVERY_TIME_MINUTES"
+              }
+            }
+          },
+          "charter_hash": "14c81abdf441d57450ba042e89f3bc979db4a146ad2d58631a61eba3e57610b7",
+          "dispute_stake_wei": 5,
+          "max_units_per_subscription": 10,
+          "provider": "0x5b98F94F3e2ac7Ec49a27f800DdE546f3B4Fdd61",
+          "unit_critical_remedy_wei": 100,
+          "unit_degraded_remedy_wei": 40,
+          "unit_subscription_fee_wei": 10
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 0,
+          "free_collateral": 0,
+          "invariant_holds": true,
+          "locked_collateral": 0,
+          "net_flows_wei": 0,
+          "outstanding_stakes": 0,
+          "provider_fee_revenue": 0,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 0,
+          "total_outbound_wei": 0
+        }
+      }
+    },
+    {
+      "label": "deposit_collateral (500 wei)",
+      "tx_hash": "0x30adbd35b7508434f351dc8c4e18b74dbd93c8a6b2c1f53f823edce3b4e4c5fe",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x30adbd35b7508434f351dc8c4e18b74dbd93c8a6b2c1f53f823edce3b4e4c5fe",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x1242E9f5bf9b253327f130E8802b7b2F438A21Ef": "idle",
+        "0x1dEcE6A694520b1d3a2e24b9f28500858C756BDb": "agree",
+        "0x8a876C3F3a4783Bd123982bcBF3c672dc0239004": "idle",
+        "0xa21bc502E3578E4b3039be8c59a257198f7c3f19": "agree",
+        "0xb0925568bFbCF00aADBcA053E6D0E1628ff3d530": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_accounting_summary": {
+          "bucket_sum_wei": 500,
+          "free_collateral": 500,
+          "invariant_holds": true,
+          "locked_collateral": 0,
+          "net_flows_wei": 500,
+          "outstanding_stakes": 0,
+          "provider_fee_revenue": 0,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 500,
+          "total_outbound_wei": 0
+        }
+      }
+    },
+    {
+      "label": "register_subscription #1 (1 unit, 10 wei fee)",
+      "tx_hash": "0x5dc705756d8ccdce59023275813f9723d3be832842495ee669807f0989a944b0",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x5dc705756d8ccdce59023275813f9723d3be832842495ee669807f0989a944b0",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x40533175AfBbAee2c030F88259Afb5aEDbCF0E05": "agree",
+        "0x5Bbbd7cdD63c0ba7f088038Cb049bDDAbE4F6fd1": "agree",
+        "0x6a4179A851B3747A458baD2f089AB2EeFE0eBbAb": "agree",
+        "0x7bf4Ea55363bbe73A4dd5b3900bf03c978A63b6e": "idle",
+        "0xb0925568bFbCF00aADBcA053E6D0E1628ff3d530": "idle"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_subscription(1)": {
+          "collateral_locked": 100,
+          "created_at": 1792254631,
+          "expires_at": 1792341031,
+          "fee_paid": 10,
+          "report_deadline": 1792344631,
+          "report_id": 0,
+          "status": 1,
+          "subscription_id": 1,
+          "tenant": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "units": 1
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 510,
+          "free_collateral": 400,
+          "invariant_holds": true,
+          "locked_collateral": 100,
+          "net_flows_wei": 510,
+          "outstanding_stakes": 0,
+          "provider_fee_revenue": 10,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 510,
+          "total_outbound_wei": 0
+        }
+      }
+    },
+    {
+      "label": "register_subscription #2 (1 unit, 10 wei fee)",
+      "tx_hash": "0xeb63b477c541f8a62f25807eb9b4668e74013576e108a3e207056ada8dd4348f",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0xeb63b477c541f8a62f25807eb9b4668e74013576e108a3e207056ada8dd4348f",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x40533175AfBbAee2c030F88259Afb5aEDbCF0E05": "idle",
+        "0x7bf4Ea55363bbe73A4dd5b3900bf03c978A63b6e": "agree",
+        "0x8a876C3F3a4783Bd123982bcBF3c672dc0239004": "agree",
+        "0xA712cB25a4002666FA9D09477251f238dD9e06b3": "idle",
+        "0xf29b6947ed298d139FC2655DB15D868C9AbB3091": "agree"
+      },
+      "accepted_status_observed": "FINALIZED",
+      "read_backs": {
+        "get_subscription(2)": {
+          "collateral_locked": 100,
+          "created_at": 1792254702,
+          "expires_at": 1792341102,
+          "fee_paid": 10,
+          "report_deadline": 1792344702,
+          "report_id": 0,
+          "status": 1,
+          "subscription_id": 2,
+          "tenant": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "units": 1
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 520,
+          "free_collateral": 300,
+          "invariant_holds": true,
+          "locked_collateral": 200,
+          "net_flows_wei": 520,
+          "outstanding_stakes": 0,
+          "provider_fee_revenue": 20,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 520,
+          "total_outbound_wei": 0
+        }
+      }
+    },
+    {
+      "label": "register_subscription #3 (1 unit, 10 wei fee)",
+      "tx_hash": "0xd3de5b0c07a6385f06c9998aa92828bca1dc54e2a931835fd1d28f794975c912",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0xd3de5b0c07a6385f06c9998aa92828bca1dc54e2a931835fd1d28f794975c912",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x17ac0CaefB18205c737e64ee582c9245A28ca1f9": "idle",
+        "0xA712cB25a4002666FA9D09477251f238dD9e06b3": "agree",
+        "0xb0925568bFbCF00aADBcA053E6D0E1628ff3d530": "agree",
+        "0xf1C7551292319EE334e2D8A24eAC108Bd4C63b21": "idle",
+        "0xf29b6947ed298d139FC2655DB15D868C9AbB3091": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_subscription(3)": {
+          "collateral_locked": 100,
+          "created_at": 1792254767,
+          "expires_at": 1792341167,
+          "fee_paid": 10,
+          "report_deadline": 1792344767,
+          "report_id": 0,
+          "status": 1,
+          "subscription_id": 3,
+          "tenant": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "units": 1
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 530,
+          "free_collateral": 200,
+          "invariant_holds": true,
+          "locked_collateral": 300,
+          "net_flows_wei": 530,
+          "outstanding_stakes": 0,
+          "provider_fee_revenue": 30,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 530,
+          "total_outbound_wei": 0
+        }
+      }
+    },
+    {
+      "label": "submit_incident_report #1 (INC-2026-CRIT-01, 5 wei stake)",
+      "tx_hash": "0x7cd9f78433f8ab88f2cb350a692ef71cd2e9546dc0c94b65320d68af80833aed",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x7cd9f78433f8ab88f2cb350a692ef71cd2e9546dc0c94b65320d68af80833aed",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x17ac0CaefB18205c737e64ee582c9245A28ca1f9": "agree",
+        "0x6a4179A851B3747A458baD2f089AB2EeFE0eBbAb": "agree",
+        "0x8Ce1805d6970d54748dE7160b5b395dCC5c71F44": "agree",
+        "0xA712cB25a4002666FA9D09477251f238dD9e06b3": "idle",
+        "0xe7eEe8a1c1690b0322d795B80A76ab2Cd1a0eAFd": "idle"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_incident_report(1)": {
+          "adjudication": {
+            "adjudicated_at": 0,
+            "carveout_ids": "",
+            "incident_end_ts": 0,
+            "incident_start_ts": 0,
+            "maintenance_announced_ts": 0,
+            "maintenance_claimed": false,
+            "maintenance_window_end_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "observed_p99_ms": 0,
+            "observed_ttr_minutes": 0,
+            "outcome": "PENDING",
+            "p99_citation": "",
+            "status_code": "PENDING:UNADJUDICATED",
+            "telemetry_complete": false,
+            "ttr_citation": "",
+            "violated_slo_ids": ""
+          },
+          "adjudication_count": 0,
+          "incident_id": "INC-2026-CRIT-01",
+          "reevaluation_deadline": 1792262067,
+          "remedy_payout": 0,
+          "report_id": 1,
+          "reporter": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "retry_count": 0,
+          "stake_amount": 5,
+          "stake_escrowed": 5,
+          "stake_state": 0,
+          "status": 1,
+          "submitted_at": 1792254867,
+          "submitted_urls": [
+            "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-crit-01.json"
+          ],
+          "subscription_id": 1,
+          "telemetry_url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-crit-01.json"
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 535,
+          "free_collateral": 200,
+          "invariant_holds": true,
+          "locked_collateral": 300,
+          "net_flows_wei": 535,
+          "outstanding_stakes": 5,
+          "provider_fee_revenue": 30,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 535,
+          "total_outbound_wei": 0
+        }
+      }
+    },
+    {
+      "label": "adjudicate_incident #1 (CRITICAL_BREACH via commit-pinned telemetry)",
+      "tx_hash": "0x4a09bb37c2208f490d839195488757ac9014918b54bcacf873da3950b713118b",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x4a09bb37c2208f490d839195488757ac9014918b54bcacf873da3950b713118b",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x2FcBC452425f2F1e102c5c04b4331fcB46ee1c00": "idle",
+        "0x5Bbbd7cdD63c0ba7f088038Cb049bDDAbE4F6fd1": "agree",
+        "0x7bf4Ea55363bbe73A4dd5b3900bf03c978A63b6e": "agree",
+        "0x8Ce1805d6970d54748dE7160b5b395dCC5c71F44": "idle",
+        "0xa21bc502E3578E4b3039be8c59a257198f7c3f19": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_incident_report(1)": {
+          "adjudication": {
+            "adjudicated_at": 1792254917,
+            "carveout_ids": "",
+            "incident_end_ts": 1792254692,
+            "incident_start_ts": 1792254632,
+            "maintenance_announced_ts": 0,
+            "maintenance_claimed": false,
+            "maintenance_window_end_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "observed_p99_ms": 1450,
+            "observed_ttr_minutes": 1,
+            "outcome": "CRITICAL_BREACH",
+            "p99_citation": "Peak p99 latency reached 1450 ms during the incident window",
+            "status_code": "OK:TELEMETRY_VERIFIED",
+            "telemetry_complete": true,
+            "ttr_citation": "Total recovery duration was 1 minute from outage start to restoration",
+            "violated_slo_ids": "SLO_LATENCY_P99"
+          },
+          "adjudication_count": 1,
+          "incident_id": "INC-2026-CRIT-01",
+          "reevaluation_deadline": 1792262067,
+          "remedy_payout": 100,
+          "report_id": 1,
+          "reporter": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "retry_count": 0,
+          "stake_amount": 5,
+          "stake_escrowed": 0,
+          "stake_state": 1,
+          "status": 3,
+          "submitted_at": 1792254867,
+          "submitted_urls": [
+            "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-crit-01.json"
+          ],
+          "subscription_id": 1,
+          "telemetry_url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-crit-01.json"
+        },
+        "get_subscription(1)": {
+          "collateral_locked": 0,
+          "created_at": 1792254631,
+          "expires_at": 1792341031,
+          "fee_paid": 10,
+          "report_deadline": 1792344631,
+          "report_id": 1,
+          "status": 3,
+          "subscription_id": 1,
+          "tenant": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "units": 1
+        },
+        "get_claimable_balance(tenant)": 105,
+        "get_accounting_summary": {
+          "bucket_sum_wei": 535,
+          "free_collateral": 200,
+          "invariant_holds": true,
+          "locked_collateral": 200,
+          "net_flows_wei": 535,
+          "outstanding_stakes": 0,
+          "provider_fee_revenue": 30,
+          "total_claimable_balances": 105,
+          "total_inbound_wei": 535,
+          "total_outbound_wei": 0
+        }
+      }
+    },
+    {
+      "label": "claim_balance (tenant withdraws 105 wei: 100 wei remedy + 5 wei stake refund)",
+      "tx_hash": "0xdf9b86d0751edc1426a7b9e379428a03f334ac881299d983cab48c2424dbed22",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0xdf9b86d0751edc1426a7b9e379428a03f334ac881299d983cab48c2424dbed22",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x40533175AfBbAee2c030F88259Afb5aEDbCF0E05": "agree",
+        "0x5Bbbd7cdD63c0ba7f088038Cb049bDDAbE4F6fd1": "agree",
+        "0x6a4179A851B3747A458baD2f089AB2EeFE0eBbAb": "idle",
+        "0x892C437da9b9CA0b6017B6f046F58E3526B46ec6": "idle",
+        "0xa21bc502E3578E4b3039be8c59a257198f7c3f19": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_claimable_balance(tenant)": 0,
+        "get_accounting_summary": {
+          "bucket_sum_wei": 430,
+          "free_collateral": 200,
+          "invariant_holds": true,
+          "locked_collateral": 200,
+          "net_flows_wei": 430,
+          "outstanding_stakes": 0,
+          "provider_fee_revenue": 30,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 535,
+          "total_outbound_wei": 105
+        }
+      }
+    },
+    {
+      "label": "submit_incident_report #2 (INC-2026-MAINT-02, 5 wei stake)",
+      "tx_hash": "0x9fc6a2607fa2fa83a1f0b343d4517e2584fc74c45c38a67fd75dc5ef5d157632",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x9fc6a2607fa2fa83a1f0b343d4517e2584fc74c45c38a67fd75dc5ef5d157632",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x1242E9f5bf9b253327f130E8802b7b2F438A21Ef": "agree",
+        "0x1dEcE6A694520b1d3a2e24b9f28500858C756BDb": "idle",
+        "0x2FcBC452425f2F1e102c5c04b4331fcB46ee1c00": "agree",
+        "0xa21bc502E3578E4b3039be8c59a257198f7c3f19": "idle",
+        "0xad7d13f269CeAd4379E64a1A3a0803a827e70B43": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_incident_report(2)": {
+          "adjudication": {
+            "adjudicated_at": 0,
+            "carveout_ids": "",
+            "incident_end_ts": 0,
+            "incident_start_ts": 0,
+            "maintenance_announced_ts": 0,
+            "maintenance_claimed": false,
+            "maintenance_window_end_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "observed_p99_ms": 0,
+            "observed_ttr_minutes": 0,
+            "outcome": "PENDING",
+            "p99_citation": "",
+            "status_code": "PENDING:UNADJUDICATED",
+            "telemetry_complete": false,
+            "ttr_citation": "",
+            "violated_slo_ids": ""
+          },
+          "adjudication_count": 0,
+          "incident_id": "INC-2026-MAINT-02",
+          "reevaluation_deadline": 1792262213,
+          "remedy_payout": 0,
+          "report_id": 2,
+          "reporter": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "retry_count": 0,
+          "stake_amount": 5,
+          "stake_escrowed": 5,
+          "stake_state": 0,
+          "status": 1,
+          "submitted_at": 1792255013,
+          "submitted_urls": [
+            "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-maint-02.json"
+          ],
+          "subscription_id": 2,
+          "telemetry_url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-maint-02.json"
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 435,
+          "free_collateral": 200,
+          "invariant_holds": true,
+          "locked_collateral": 200,
+          "net_flows_wei": 435,
+          "outstanding_stakes": 5,
+          "provider_fee_revenue": 30,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 540,
+          "total_outbound_wei": 105
+        }
+      }
+    },
+    {
+      "label": "adjudicate_incident #2 (NO_BREACH via verified CARVEOUT_SCHEDULED_MAINTENANCE)",
+      "tx_hash": "0x042a33afb677b8b1f7cfb592c256a0932a06721270975cc3ba7505c5558586ed",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x042a33afb677b8b1f7cfb592c256a0932a06721270975cc3ba7505c5558586ed",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0B50B270Eba5D9B780272C4Cf4720260177e761D": "agree",
+        "0x1dEcE6A694520b1d3a2e24b9f28500858C756BDb": "agree",
+        "0x40533175AfBbAee2c030F88259Afb5aEDbCF0E05": "idle",
+        "0x8Ce1805d6970d54748dE7160b5b395dCC5c71F44": "idle",
+        "0xa21bc502E3578E4b3039be8c59a257198f7c3f19": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_incident_report(2)": {
+          "adjudication": {
+            "adjudicated_at": 1792255058,
+            "carveout_ids": "CARVEOUT_SCHEDULED_MAINTENANCE",
+            "incident_end_ts": 1792254763,
+            "incident_start_ts": 1792254703,
+            "maintenance_announced_ts": 1792164703,
+            "maintenance_claimed": true,
+            "maintenance_window_end_ts": 1792256503,
+            "maintenance_window_start_ts": 1792254702,
+            "observed_p99_ms": 600,
+            "observed_ttr_minutes": 1,
+            "outcome": "NO_BREACH",
+            "p99_citation": "Peak p99 latency was 600 ms during maintenance upgrade",
+            "status_code": "EXPECTED:CARVEOUT_APPLIES",
+            "telemetry_complete": true,
+            "ttr_citation": "Scheduled maintenance recovery took 1 minute inside declared window",
+            "violated_slo_ids": "SLO_LATENCY_P99"
+          },
+          "adjudication_count": 1,
+          "incident_id": "INC-2026-MAINT-02",
+          "reevaluation_deadline": 1792262213,
+          "remedy_payout": 0,
+          "report_id": 2,
+          "reporter": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "retry_count": 0,
+          "stake_amount": 5,
+          "stake_escrowed": 0,
+          "stake_state": 2,
+          "status": 3,
+          "submitted_at": 1792255013,
+          "submitted_urls": [
+            "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-maint-02.json"
+          ],
+          "subscription_id": 2,
+          "telemetry_url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-maint-02.json"
+        },
+        "get_subscription(2)": {
+          "collateral_locked": 0,
+          "created_at": 1792254702,
+          "expires_at": 1792341102,
+          "fee_paid": 10,
+          "report_deadline": 1792344702,
+          "report_id": 2,
+          "status": 3,
+          "subscription_id": 2,
+          "tenant": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "units": 1
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 435,
+          "free_collateral": 300,
+          "invariant_holds": true,
+          "locked_collateral": 100,
+          "net_flows_wei": 435,
+          "outstanding_stakes": 0,
+          "provider_fee_revenue": 35,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 540,
+          "total_outbound_wei": 105
+        }
+      }
+    },
+    {
+      "label": "submit_incident_report #3 (INC-2026-UNVERIFIED-MAINT-03, 5 wei stake)",
+      "tx_hash": "0x56ac542ae2d90b73850e0c62daf75755d925905168f4f78c04acbb5bc683d8f0",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x56ac542ae2d90b73850e0c62daf75755d925905168f4f78c04acbb5bc683d8f0",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x1dEcE6A694520b1d3a2e24b9f28500858C756BDb": "idle",
+        "0x2FcBC452425f2F1e102c5c04b4331fcB46ee1c00": "agree",
+        "0x5Bbbd7cdD63c0ba7f088038Cb049bDDAbE4F6fd1": "agree",
+        "0x8a876C3F3a4783Bd123982bcBF3c672dc0239004": "idle",
+        "0xf29b6947ed298d139FC2655DB15D868C9AbB3091": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_incident_report(3)": {
+          "adjudication": {
+            "adjudicated_at": 0,
+            "carveout_ids": "",
+            "incident_end_ts": 0,
+            "incident_start_ts": 0,
+            "maintenance_announced_ts": 0,
+            "maintenance_claimed": false,
+            "maintenance_window_end_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "observed_p99_ms": 0,
+            "observed_ttr_minutes": 0,
+            "outcome": "PENDING",
+            "p99_citation": "",
+            "status_code": "PENDING:UNADJUDICATED",
+            "telemetry_complete": false,
+            "ttr_citation": "",
+            "violated_slo_ids": ""
+          },
+          "adjudication_count": 0,
+          "incident_id": "INC-2026-UNVERIFIED-MAINT-03",
+          "reevaluation_deadline": 1792262311,
+          "remedy_payout": 0,
+          "report_id": 3,
+          "reporter": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "retry_count": 0,
+          "stake_amount": 5,
+          "stake_escrowed": 5,
+          "stake_state": 0,
+          "status": 1,
+          "submitted_at": 1792255111,
+          "submitted_urls": [
+            "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-unverified-maint-03.json"
+          ],
+          "subscription_id": 3,
+          "telemetry_url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-unverified-maint-03.json"
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 440,
+          "free_collateral": 300,
+          "invariant_holds": true,
+          "locked_collateral": 100,
+          "net_flows_wei": 440,
+          "outstanding_stakes": 5,
+          "provider_fee_revenue": 35,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 545,
+          "total_outbound_wei": 105
+        }
+      }
+    },
+    {
+      "label": "adjudicate_incident #3 (Abuse blocked: unverified maintenance claim -> INCONCLUSIVE / STAKE_HELD)",
+      "tx_hash": "0x568343a42f3f6abc9112cfafea7f300a2861fa3880ee4ecd28619a6909a9181b",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x568343a42f3f6abc9112cfafea7f300a2861fa3880ee4ecd28619a6909a9181b",
+      "expected_failure": false,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0B50B270Eba5D9B780272C4Cf4720260177e761D": "agree",
+        "0x40533175AfBbAee2c030F88259Afb5aEDbCF0E05": "idle",
+        "0x5Bbbd7cdD63c0ba7f088038Cb049bDDAbE4F6fd1": "agree",
+        "0x892C437da9b9CA0b6017B6f046F58E3526B46ec6": "agree",
+        "0x8Ce1805d6970d54748dE7160b5b395dCC5c71F44": "idle"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_incident_report(3)": {
+          "adjudication": {
+            "adjudicated_at": 1792255155,
+            "carveout_ids": "",
+            "incident_end_ts": 0,
+            "incident_start_ts": 0,
+            "maintenance_announced_ts": 0,
+            "maintenance_claimed": true,
+            "maintenance_window_end_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "observed_p99_ms": 0,
+            "observed_ttr_minutes": 0,
+            "outcome": "INCONCLUSIVE",
+            "p99_citation": "",
+            "status_code": "EXPECTED:UNVERIFIED_CARVEOUT_EVIDENCE",
+            "telemetry_complete": false,
+            "ttr_citation": "",
+            "violated_slo_ids": ""
+          },
+          "adjudication_count": 1,
+          "incident_id": "INC-2026-UNVERIFIED-MAINT-03",
+          "reevaluation_deadline": 1792262311,
+          "remedy_payout": 0,
+          "report_id": 3,
+          "reporter": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "retry_count": 0,
+          "stake_amount": 5,
+          "stake_escrowed": 5,
+          "stake_state": 0,
+          "status": 2,
+          "submitted_at": 1792255111,
+          "submitted_urls": [
+            "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-unverified-maint-03.json"
+          ],
+          "subscription_id": 3,
+          "telemetry_url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-unverified-maint-03.json"
+        },
+        "get_accounting_summary": {
+          "bucket_sum_wei": 440,
+          "free_collateral": 300,
+          "invariant_holds": true,
+          "locked_collateral": 100,
+          "net_flows_wei": 440,
+          "outstanding_stakes": 5,
+          "provider_fee_revenue": 35,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 545,
+          "total_outbound_wei": 105
+        }
+      }
+    },
+    {
+      "label": "EXPECTED FAILURE: Unauthorized caller on withdraw_free_collateral (EXPECTED:ONLY_PROVIDER)",
+      "tx_hash": "0xd468360ec3a18b3590b6e2de53a8bb202d837f70099a6f39ccde78f808d89d9c",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0xd468360ec3a18b3590b6e2de53a8bb202d837f70099a6f39ccde78f808d89d9c",
+      "expected_failure": true,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "ERROR",
+      "leader_error": null,
+      "votes": {
+        "0x1dEcE6A694520b1d3a2e24b9f28500858C756BDb": "idle",
+        "0x2FcBC452425f2F1e102c5c04b4331fcB46ee1c00": "agree",
+        "0x5Bbbd7cdD63c0ba7f088038Cb049bDDAbE4F6fd1": "agree",
+        "0x8Ce1805d6970d54748dE7160b5b395dCC5c71F44": "agree",
+        "0xA712cB25a4002666FA9D09477251f238dD9e06b3": "idle"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_accounting_summary": {
+          "bucket_sum_wei": 440,
+          "free_collateral": 300,
+          "invariant_holds": true,
+          "locked_collateral": 100,
+          "net_flows_wei": 440,
+          "outstanding_stakes": 5,
+          "provider_fee_revenue": 35,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 545,
+          "total_outbound_wei": 105
+        }
+      }
+    },
+    {
+      "label": "EXPECTED FAILURE: Replay of duplicate telemetry URL on reevaluate_incident_report (EXPECTED:DUPLICATE_EVIDENCE_URL)",
+      "tx_hash": "0x811bf29e6989627303374df827494bfac330ecb1a21a53f1cc821304bba09f75",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x811bf29e6989627303374df827494bfac330ecb1a21a53f1cc821304bba09f75",
+      "expected_failure": true,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "ERROR",
+      "leader_error": null,
+      "votes": {
+        "0x40533175AfBbAee2c030F88259Afb5aEDbCF0E05": "idle",
+        "0x9244De5F20cB75A0c51d79A9A3208D00a99aFc10": "agree",
+        "0xA712cB25a4002666FA9D09477251f238dD9e06b3": "agree",
+        "0xb0925568bFbCF00aADBcA053E6D0E1628ff3d530": "idle",
+        "0xf29b6947ed298d139FC2655DB15D868C9AbB3091": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_incident_report(3)": {
+          "adjudication": {
+            "adjudicated_at": 1792255155,
+            "carveout_ids": "",
+            "incident_end_ts": 0,
+            "incident_start_ts": 0,
+            "maintenance_announced_ts": 0,
+            "maintenance_claimed": true,
+            "maintenance_window_end_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "observed_p99_ms": 0,
+            "observed_ttr_minutes": 0,
+            "outcome": "INCONCLUSIVE",
+            "p99_citation": "",
+            "status_code": "EXPECTED:UNVERIFIED_CARVEOUT_EVIDENCE",
+            "telemetry_complete": false,
+            "ttr_citation": "",
+            "violated_slo_ids": ""
+          },
+          "adjudication_count": 1,
+          "incident_id": "INC-2026-UNVERIFIED-MAINT-03",
+          "reevaluation_deadline": 1792262311,
+          "remedy_payout": 0,
+          "report_id": 3,
+          "reporter": "0x3F16CB66b99bC961dd0a0CbF0c817A7Cbf767F8b",
+          "retry_count": 0,
+          "stake_amount": 5,
+          "stake_escrowed": 5,
+          "stake_state": 0,
+          "status": 2,
+          "submitted_at": 1792255111,
+          "submitted_urls": [
+            "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-unverified-maint-03.json"
+          ],
+          "subscription_id": 3,
+          "telemetry_url": "https://raw.githubusercontent.com/khezzed/aegis-sla-escrow/f87ce6486e0262b81821dc4a6f34a9aca784c52b/fixtures/telemetry/inc-2026-unverified-maint-03.json"
+        }
+      }
+    },
+    {
+      "label": "EXPECTED FAILURE: Unauthorized telemetry domain on reevaluate_incident_report (EXPECTED:UNAUTHORIZED_TELEMETRY_HOST)",
+      "tx_hash": "0x9e933f4241793f5637ab6f7b17e72900e4ed7ce193d22258b5af23184f84e46b",
+      "explorer_url": "https://explorer-studio.genlayer.com/transactions/0x9e933f4241793f5637ab6f7b17e72900e4ed7ce193d22258b5af23184f84e46b",
+      "expected_failure": true,
+      "status_name": "FINALIZED",
+      "leader_execution_result": "ERROR",
+      "leader_error": null,
+      "votes": {
+        "0x1242E9f5bf9b253327f130E8802b7b2F438A21Ef": "agree",
+        "0x40533175AfBbAee2c030F88259Afb5aEDbCF0E05": "agree",
+        "0x6a4179A851B3747A458baD2f089AB2EeFE0eBbAb": "agree",
+        "0xad7d13f269CeAd4379E64a1A3a0803a827e70B43": "agree",
+        "0xf29b6947ed298d139FC2655DB15D868C9AbB3091": "agree"
+      },
+      "accepted_status_observed": "ACCEPTED",
+      "read_backs": {
+        "get_accounting_summary": {
+          "bucket_sum_wei": 440,
+          "free_collateral": 300,
+          "invariant_holds": true,
+          "locked_collateral": 100,
+          "net_flows_wei": 440,
+          "outstanding_stakes": 5,
+          "provider_fee_revenue": 35,
+          "total_claimable_balances": 0,
+          "total_inbound_wei": 545,
+          "total_outbound_wei": 105
+        }
+      }
+    }
+  ],
+  "operator_notes": [
+    {
+      "earlier_attempt_contract": "0x3041d871A54477a47c1666ad21ab59f0B24EeFCA",
+      "note": "Superseded attempt where SimConfig(genvm_datetime=...) was passed without mock validators on studionet; replaced by 100% unsimulated live wall-clock execution on this contract."
+    }
+  ],
+  "final_accounting_summary": {
+    "bucket_sum_wei": 440,
+    "free_collateral": 300,
+    "invariant_holds": true,
+    "locked_collateral": 100,
+    "net_flows_wei": 440,
+    "outstanding_stakes": 5,
+    "provider_fee_revenue": 35,
+    "total_claimable_balances": 0,
+    "total_inbound_wei": 545,
+    "total_outbound_wei": 105
+  }
+}
