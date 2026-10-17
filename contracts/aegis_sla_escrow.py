@@ -899,6 +899,7 @@ class AegisSlaEscrow(gl.Contract):
         sub_created_at: int,
         sub_expires_at: int,
         adjudicate_ts: int,
+        expected_incident_id: str = "",
     ) -> dict:
         # Gate 1: LLM JSON Schema Validation
         if not isinstance(raw_eval, dict):
@@ -972,11 +973,29 @@ class AegisSlaEscrow(gl.Contract):
                 status_code=STATUS_EXPECTED_INCOMPLETE_TELEMETRY,
             )
 
-        # Gate 3: Incident Identity Mismatch (Evaluated before metric/citation checks so wrong-incident pages resolve deterministically)
-        if not raw_eval["service_name_matched"] or not raw_eval["incident_id_matched"]:
+        # Gate 3: Incident Identity Mismatch
+        # Deterministically verify service_name and expected_incident_id in payload_text alongside LLM flags,
+        # and return non-terminal OUTCOME_INCONCLUSIVE so an identity mismatch or wrong URL never
+        # terminally forfeits a legitimate claim or confiscates the tenant's stake.
+        norm_payload_lower = self._normalize_whitespace(payload_text).lower()
+        expected_service_lower = self._normalize_whitespace(str(charter.get("service_name", ""))).lower()
+        expected_inc_lower = (
+            self._normalize_whitespace(expected_incident_id).lower()
+            if isinstance(expected_incident_id, str) and len(expected_incident_id) > 0
+            else ""
+        )
+        service_in_payload = (len(expected_service_lower) > 0) and (expected_service_lower in norm_payload_lower)
+        incident_in_payload = (len(expected_inc_lower) == 0) or (expected_inc_lower in norm_payload_lower)
+
+        if (
+            not raw_eval["service_name_matched"]
+            or not raw_eval["incident_id_matched"]
+            or not service_in_payload
+            or not incident_in_payload
+        ):
             return self._build_envelope(
-                outcome=OUTCOME_NO_BREACH,
-                telemetry_complete=True,
+                outcome=OUTCOME_INCONCLUSIVE,
+                telemetry_complete=False,
                 status_code=STATUS_EXPECTED_INCIDENT_MISMATCH,
             )
 
@@ -1122,7 +1141,7 @@ class AegisSlaEscrow(gl.Contract):
             p99_citation=norm_p99_cit,
         )
 
-    def _evaluate_evidence_nondet(
+    def _fetch_and_evaluate_nondet(
         self,
         canonical_url: str,
         expected_incident_id: str,
@@ -1130,7 +1149,7 @@ class AegisSlaEscrow(gl.Contract):
         sub_created_at: int,
         sub_expires_at: int,
         adjudicate_ts: int,
-    ) -> dict:
+    ) -> tuple[dict, str]:
         # 1. Re-verify canonical URL before any external request
         verified_url = self._canonicalize_telemetry_url(canonical_url, charter)
         max_bytes = int(charter["max_payload_bytes"])
@@ -1143,41 +1162,62 @@ class AegisSlaEscrow(gl.Contract):
             if isinstance(raw_body, str):
                 raw_body = raw_body.encode("utf-8")
         except Exception:
-            return self._build_envelope(
-                outcome=OUTCOME_INCONCLUSIVE,
-                status_code=STATUS_TRANSIENT_HTTP,
+            return (
+                self._build_envelope(
+                    outcome=OUTCOME_INCONCLUSIVE,
+                    status_code=STATUS_TRANSIENT_HTTP,
+                ),
+                "",
             )
 
         if 300 <= http_status < 400:
-            return self._build_envelope(
-                outcome=OUTCOME_INCONCLUSIVE,
-                status_code=STATUS_EXTERNAL_REDIRECT,
+            return (
+                self._build_envelope(
+                    outcome=OUTCOME_INCONCLUSIVE,
+                    status_code=STATUS_EXTERNAL_REDIRECT,
+                ),
+                "",
             )
         if http_status in (404, 410):
-            return self._build_envelope(
-                outcome=OUTCOME_INCONCLUSIVE,
-                status_code=STATUS_EXTERNAL_NOT_FOUND,
+            return (
+                self._build_envelope(
+                    outcome=OUTCOME_INCONCLUSIVE,
+                    status_code=STATUS_EXTERNAL_NOT_FOUND,
+                ),
+                "",
             )
         if http_status in (408, 425, 429, 500, 502, 503, 504):
-            return self._build_envelope(
-                outcome=OUTCOME_INCONCLUSIVE,
-                status_code=STATUS_TRANSIENT_HTTP,
+            return (
+                self._build_envelope(
+                    outcome=OUTCOME_INCONCLUSIVE,
+                    status_code=STATUS_TRANSIENT_HTTP,
+                ),
+                "",
             )
         if http_status != 200:
-            return self._build_envelope(
-                outcome=OUTCOME_INCONCLUSIVE,
-                status_code=STATUS_EXTERNAL_ACCESS_DENIED,
+            return (
+                self._build_envelope(
+                    outcome=OUTCOME_INCONCLUSIVE,
+                    status_code=STATUS_EXTERNAL_ACCESS_DENIED,
+                ),
+                "",
             )
 
         if len(raw_body) == 0:
-            return self._build_envelope(
-                outcome=OUTCOME_INCONCLUSIVE,
-                status_code=STATUS_EXPECTED_INCOMPLETE_TELEMETRY,
+            return (
+                self._build_envelope(
+                    outcome=OUTCOME_INCONCLUSIVE,
+                    status_code=STATUS_EXPECTED_INCOMPLETE_TELEMETRY,
+                ),
+                "",
             )
         if len(raw_body) > max_bytes:
-            return self._build_envelope(
-                outcome=OUTCOME_INCONCLUSIVE,
-                status_code=STATUS_EXTERNAL_OVERSIZED,
+            return (
+                self._build_envelope(
+                    outcome=OUTCOME_INCONCLUSIVE,
+                    status_code=STATUS_EXTERNAL_OVERSIZED,
+                ),
+                "",
             )
 
         payload_text = raw_body.decode("utf-8", errors="replace")
@@ -1219,20 +1259,44 @@ Return ONLY a valid JSON object matching this exact schema:
         try:
             llm_raw = gl.nondet.exec_prompt(judge_prompt, response_format="json")
         except Exception:
-            return self._build_envelope(
-                outcome=OUTCOME_INCONCLUSIVE,
-                status_code=STATUS_LLM_MALFORMED,
+            return (
+                self._build_envelope(
+                    outcome=OUTCOME_INCONCLUSIVE,
+                    status_code=STATUS_LLM_MALFORMED,
+                ),
+                payload_text,
             )
 
         parsed_eval = self._sanitize_llm_json(llm_raw)
-        return self._derive_consensus_envelope(
+        env = self._derive_consensus_envelope(
             raw_eval=parsed_eval,
             payload_text=payload_text,
             charter=charter,
             sub_created_at=sub_created_at,
             sub_expires_at=sub_expires_at,
             adjudicate_ts=adjudicate_ts,
+            expected_incident_id=expected_incident_id,
         )
+        return env, payload_text
+
+    def _evaluate_evidence_nondet(
+        self,
+        canonical_url: str,
+        expected_incident_id: str,
+        charter: dict,
+        sub_created_at: int,
+        sub_expires_at: int,
+        adjudicate_ts: int,
+    ) -> dict:
+        env, _ = self._fetch_and_evaluate_nondet(
+            canonical_url=canonical_url,
+            expected_incident_id=expected_incident_id,
+            charter=charter,
+            sub_created_at=sub_created_at,
+            sub_expires_at=sub_expires_at,
+            adjudicate_ts=adjudicate_ts,
+        )
+        return env
 
     def _validate_envelope_schema(self, env: Any) -> bool:
         if not isinstance(env, dict):
@@ -1315,7 +1379,7 @@ Return ONLY a valid JSON object matching this exact schema:
             if not self._validate_envelope_schema(leader_env):
                 return False
 
-            val_env = self._evaluate_evidence_nondet(
+            val_env, val_payload_text = self._fetch_and_evaluate_nondet(
                 canonical_url=target_url,
                 expected_incident_id=expected_incident_id,
                 charter=charter,
@@ -1324,41 +1388,93 @@ Return ONLY a valid JSON object matching this exact schema:
                 adjudicate_ts=adjudicate_ts,
             )
 
-            # Exact equality across all 13 deterministic/metric/maintenance fields
-            deterministic_keys = (
+            # 1. Exact equality required on core verdict and classification fields
+            verdict_keys = (
                 "outcome",
                 "violated_slo_ids",
                 "carveout_ids",
                 "telemetry_complete",
                 "status_code",
-                "incident_start_ts",
-                "incident_end_ts",
-                "observed_ttr_minutes",
-                "observed_p99_ms",
                 "maintenance_claimed",
-                "maintenance_announced_ts",
-                "maintenance_window_start_ts",
-                "maintenance_window_end_ts",
             )
-            for k in deterministic_keys:
+            for k in verdict_keys:
                 if leader_env[k] != val_env[k]:
                     return False
 
-            # Citation verification
-            if not val_env["telemetry_complete"] or val_env["status_code"] == STATUS_EXPECTED_INCIDENT_MISMATCH:
+            # 2. Incomplete telemetry: all numeric fields must be 0 and citations empty
+            if not val_env["telemetry_complete"]:
+                zero_keys = (
+                    "incident_start_ts",
+                    "incident_end_ts",
+                    "observed_ttr_minutes",
+                    "observed_p99_ms",
+                    "maintenance_announced_ts",
+                    "maintenance_window_start_ts",
+                    "maintenance_window_end_ts",
+                )
+                for zk in zero_keys:
+                    if leader_env[zk] != 0:
+                        return False
                 if leader_env["ttr_citation"] != "" or leader_env["p99_citation"] != "":
                     return False
-            else:
-                if (
-                    len(leader_env["ttr_citation"]) < MIN_CITATION_LENGTH
-                    or len(leader_env["ttr_citation"]) > MAX_CITATION_LENGTH
-                    or len(leader_env["p99_citation"]) < MIN_CITATION_LENGTH
-                    or len(leader_env["p99_citation"]) > MAX_CITATION_LENGTH
-                ):
+                return True
+
+            # 3. Complete telemetry: allow harmless citation wording variance provided
+            #    the leader's citations are grounded verbatim in the validator's fetched payload,
+            #    metrics agree within tight extraction tolerances, and re-running the deterministic
+            #    gates on the leader's extracted facts yields the identical verdict.
+            if (
+                self._normalize_whitespace(leader_env["ttr_citation"]) != leader_env["ttr_citation"]
+                or self._normalize_whitespace(leader_env["p99_citation"]) != leader_env["p99_citation"]
+            ):
+                return False
+            if (
+                not self._citation_grounded_in_payload(leader_env["ttr_citation"], val_payload_text)
+                or not self._citation_grounded_in_payload(leader_env["p99_citation"], val_payload_text)
+            ):
+                return False
+
+            tolerances = (
+                ("incident_start_ts", 60),
+                ("incident_end_ts", 60),
+                ("observed_ttr_minutes", 1),
+                ("observed_p99_ms", 5),
+                ("maintenance_announced_ts", 60),
+                ("maintenance_window_start_ts", 60),
+                ("maintenance_window_end_ts", 60),
+            )
+            for field_name, max_delta in tolerances:
+                if abs(int(leader_env[field_name]) - int(val_env[field_name])) > max_delta:
                     return False
-                if leader_env["ttr_citation"] != val_env["ttr_citation"]:
-                    return False
-                if leader_env["p99_citation"] != val_env["p99_citation"]:
+
+            leader_synthetic_raw = {
+                "service_name_matched": True,
+                "incident_id_matched": True,
+                "postmortem_finalized": True,
+                "timestamps_present": True,
+                "root_cause_documented": True,
+                "incident_start_ts": int(leader_env["incident_start_ts"]),
+                "incident_end_ts": int(leader_env["incident_end_ts"]),
+                "observed_ttr_minutes": int(leader_env["observed_ttr_minutes"]),
+                "observed_p99_ms": int(leader_env["observed_p99_ms"]),
+                "maintenance_claimed": bool(leader_env["maintenance_claimed"]),
+                "maintenance_announced_ts": int(leader_env["maintenance_announced_ts"]),
+                "maintenance_window_start_ts": int(leader_env["maintenance_window_start_ts"]),
+                "maintenance_window_end_ts": int(leader_env["maintenance_window_end_ts"]),
+                "ttr_citation": str(leader_env["ttr_citation"]),
+                "p99_citation": str(leader_env["p99_citation"]),
+            }
+            rederived = self._derive_consensus_envelope(
+                raw_eval=leader_synthetic_raw,
+                payload_text=val_payload_text,
+                charter=charter,
+                sub_created_at=sub_created_at,
+                sub_expires_at=sub_expires_at,
+                adjudicate_ts=adjudicate_ts,
+                expected_incident_id=expected_incident_id,
+            )
+            for k in verdict_keys:
+                if rederived[k] != val_env[k]:
                     return False
 
             return True

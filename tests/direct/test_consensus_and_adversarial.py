@@ -653,3 +653,171 @@ def test_at16_comprehensive_four_outcome_bucket_deltas_and_conservation():
     assert r4_final["stake_state"] == int(STAKE_REFUNDED)
     assert r4_final["stake_escrowed"] == 0
 
+
+def test_at17_incident_identity_mismatch_returns_inconclusive_and_retains_stake():
+    """
+    AT-17: Verifies that an incident identity mismatch (either LLM boolean false or
+    payload missing expected incident ID) returns non-terminal OUTCOME_INCONCLUSIVE
+    (STATUS_EXPECTED_INCIDENT_MISMATCH) instead of terminal OUTCOME_NO_BREACH,
+    preserving the tenant's stake (STAKE_HELD) and allowing re-evaluation.
+    """
+    contract, sub_id = setup_funded_subscription()
+    url_wrong = "https://status.cloudprovider.io/incidents/inc-wrong-id"
+    url_right = "https://status.cloudprovider.io/incidents/inc-right-id"
+
+    gl_mock.message.sender_address = TENANT_A_ADDR
+    gl_mock.message.value = DISPUTE_STAKE_WEI
+    rep_id = contract.submit_incident_report(sub_id, "INC-TARGET-17", url_wrong)
+    gl_mock.message.value = u256(0)
+
+    inc_start = 1792232000
+    inc_end = inc_start + (150 * 60)
+
+    # Attempt 1: Payload is for a different incident (INC-OTHER-99)
+    payload_wrong = (
+        '{"service":"cloud-core-api","incident_id":"INC-OTHER-99",'
+        '"ttr":"Duration 150 minutes","p99":"p99 reached 1800 ms"}'
+    )
+    mock_web_responses[url_wrong] = MockWebResponse(status=200, body=payload_wrong.encode("utf-8"))
+    mock_llm_responses.append(
+        lambda _p: {
+            "service_name_matched": True,
+            "incident_id_matched": True,  # Even if LLM mistakenly says True, deterministic substring check catches it!
+            "postmortem_finalized": True,
+            "timestamps_present": True,
+            "root_cause_documented": True,
+            "incident_start_ts": inc_start,
+            "incident_end_ts": inc_end,
+            "observed_ttr_minutes": 150,
+            "observed_p99_ms": 1800,
+            "maintenance_claimed": False,
+            "maintenance_announced_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "maintenance_window_end_ts": 0,
+            "ttr_citation": "Duration 150 minutes",
+            "p99_citation": "p99 reached 1800 ms",
+        }
+    )
+
+    gl_mock.message_raw = {"datetime": inc_end + 300}
+    env_1 = contract.adjudicate_incident(rep_id)
+    assert env_1["outcome"] == OUTCOME_INCONCLUSIVE
+    assert env_1["telemetry_complete"] is False
+    assert env_1["status_code"] == STATUS_EXPECTED_INCIDENT_MISMATCH
+
+    rep_mid = contract.get_incident_report(rep_id)
+    assert rep_mid["status"] == int(REPORT_INCONCLUSIVE)
+    assert rep_mid["stake_state"] == int(STAKE_HELD)
+    assert rep_mid["stake_escrowed"] == int(DISPUTE_STAKE_WEI)
+    assert contract.get_subscription(sub_id)["status"] == int(SUB_CLAIM_OPEN)
+
+    # Retry 1 with the correct incident URL -> resolves CRITICAL_BREACH and refunds stake
+    gl_mock.message.sender_address = TENANT_A_ADDR
+    contract.reevaluate_incident_report(rep_id, url_right)
+    payload_right = (
+        '{"service":"cloud-core-api","incident_id":"INC-TARGET-17",'
+        '"ttr":"Duration 150 minutes","p99":"p99 reached 1800 ms"}'
+    )
+    mock_web_responses[url_right] = MockWebResponse(status=200, body=payload_right.encode("utf-8"))
+    mock_llm_responses.clear()
+    mock_llm_responses.append(
+        lambda _p: {
+            "service_name_matched": True,
+            "incident_id_matched": True,
+            "postmortem_finalized": True,
+            "timestamps_present": True,
+            "root_cause_documented": True,
+            "incident_start_ts": inc_start,
+            "incident_end_ts": inc_end,
+            "observed_ttr_minutes": 150,
+            "observed_p99_ms": 1800,
+            "maintenance_claimed": False,
+            "maintenance_announced_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "maintenance_window_end_ts": 0,
+            "ttr_citation": "Duration 150 minutes",
+            "p99_citation": "p99 reached 1800 ms",
+        }
+    )
+
+    env_2 = contract.adjudicate_incident(rep_id)
+    assert env_2["outcome"] == OUTCOME_CRITICAL_BREACH
+    assert env_2["status_code"] == STATUS_OK_VERIFIED
+    rep_final = contract.get_incident_report(rep_id)
+    assert rep_final["status"] == int(REPORT_RESOLVED)
+    assert rep_final["stake_state"] == int(STAKE_REFUNDED)
+    assert_global_conservation(contract)
+
+
+def test_at18_validator_accepts_harmless_citation_wording_differences():
+    """
+    AT-18: Verifies that when the Leader and Validator extract different verbatim
+    citations (and minor within-tolerance metric differences) that are both grounded
+    in the validator's fetched payload and yield the identical verdict, consensus succeeds.
+    """
+    contract, sub_id = setup_funded_subscription()
+    url = "https://status.cloudprovider.io/incidents/inc-18-cit-diff"
+
+    gl_mock.message.sender_address = TENANT_A_ADDR
+    gl_mock.message.value = DISPUTE_STAKE_WEI
+    rep_id = contract.submit_incident_report(sub_id, "INC-CIT-18", url)
+    gl_mock.message.value = u256(0)
+
+    inc_start = 1792232000
+    inc_end = inc_start + (150 * 60)
+    payload = (
+        '{"service":"cloud-core-api","incident_id":"INC-CIT-18",'
+        '"ttr":"Total outage duration was 150 minutes from start to recovery",'
+        '"p99":"Peak p99 latency reached 1850 ms during the incident window"}'
+    )
+    mock_web_responses[url] = MockWebResponse(status=200, body=payload.encode("utf-8"))
+
+    # Leader extracts shorter verbatim substrings; Validator extracts longer verbatim substrings
+    mock_llm_responses.append(
+        lambda _p: {
+            "service_name_matched": True,
+            "incident_id_matched": True,
+            "postmortem_finalized": True,
+            "timestamps_present": True,
+            "root_cause_documented": True,
+            "incident_start_ts": inc_start,
+            "incident_end_ts": inc_end,
+            "observed_ttr_minutes": 150,
+            "observed_p99_ms": 1850,
+            "maintenance_claimed": False,
+            "maintenance_announced_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "maintenance_window_end_ts": 0,
+            "ttr_citation": "outage duration was 150 minutes",
+            "p99_citation": "p99 latency reached 1850 ms",
+        }
+    )
+    mock_llm_responses.append(
+        lambda _p: {
+            "service_name_matched": True,
+            "incident_id_matched": True,
+            "postmortem_finalized": True,
+            "timestamps_present": True,
+            "root_cause_documented": True,
+            "incident_start_ts": inc_start,
+            "incident_end_ts": inc_end,
+            "observed_ttr_minutes": 150,
+            "observed_p99_ms": 1852,
+            "maintenance_claimed": False,
+            "maintenance_announced_ts": 0,
+            "maintenance_window_start_ts": 0,
+            "maintenance_window_end_ts": 0,
+            "ttr_citation": "Total outage duration was 150 minutes from start to recovery",
+            "p99_citation": "Peak p99 latency reached 1850 ms during the incident window",
+        }
+    )
+
+    gl_mock.message_raw = {"datetime": inc_end + 300}
+    env = contract.adjudicate_incident(rep_id)
+    assert env["outcome"] == OUTCOME_CRITICAL_BREACH
+    assert env["status_code"] == STATUS_OK_VERIFIED
+    assert env["ttr_citation"] == "outage duration was 150 minutes"
+    assert env["p99_citation"] == "p99 latency reached 1850 ms"
+    assert_global_conservation(contract)
+
+

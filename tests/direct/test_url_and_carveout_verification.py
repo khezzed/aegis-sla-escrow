@@ -389,7 +389,11 @@ def test_at09_and_at10_scoped_and_full_maintenance_carveout_excusal():
     rep_full = contract_full.submit_incident_report(sub_full, "INC-VALID-MAINT", url_full)
     gl_mock.message.value = u256(0)
 
-    mock_web_responses[url_full] = MockWebResponse(status=200, body=payload_scoped.encode("utf-8"))
+    payload_full = (
+        '{"service":"cloud-core-api","incident_id":"INC-VALID-MAINT",'
+        '"ttr":"outage lasted 60 minutes","p99":"p99 latency spiked to 750 ms"}'
+    )
+    mock_web_responses[url_full] = MockWebResponse(status=200, body=payload_full.encode("utf-8"))
     mock_llm_responses.clear()
     mock_llm_responses.append(
         lambda _p: {
